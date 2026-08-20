@@ -2,98 +2,160 @@
 <html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0">
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, viewport-fit=cover">
 		<title>Dear, Unknown</title>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="default">
+		<meta name="apple-mobile-web-app-title" content="Dear, Unknown">
 		<style>
-html, body, #canvas {
-	margin: 0;
-	padding: 0;
-	border: 0;
-}
+/*
+	Godot's stock shell opens on the engine's logo over near-black. That is the
+	first thing anyone opening a shared link sees, and it says "a game engine
+	demo" rather than "a letter arrived". Everything here is the game's own
+	paper palette, kept in sync by hand with scripts/autoload/palette.gd.
+*/
+html, body { margin: 0; padding: 0; border: 0; height: 100%; }
 
 body {
-	color: white;
-	background-color: black;
+	background-color: #DEDCD6;
+	color: #1C1D1B;
 	overflow: hidden;
 	touch-action: none;
+	overscroll-behavior: none;
+	font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 #canvas {
 	display: block;
+	touch-action: none !important;
+	-webkit-user-select: none;
+	user-select: none;
 }
 
-#canvas:focus {
-	outline: none;
-}
+#canvas:focus { outline: none; }
 
-#status, #status-splash, #status-progress {
+#status, #status-progress {
 	position: absolute;
 	left: 0;
 	right: 0;
 }
 
-#status, #status-splash {
+#status {
 	top: 0;
 	bottom: 0;
-}
-
-#status {
-	background-color: #dedcd6;
+	background-color: #DEDCD6;
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	align-items: center;
 	visibility: hidden;
+	z-index: 1;
 }
 
-#status-splash {
-	max-height: 100%;
-	max-width: 100%;
-	margin: auto;
-}
-
-#status-splash.show-image--false {
-	display: none;
-}
-
-#status-splash.fullsize--true {
-	height: 100%;
-	width: 100%;
-	object-fit: contain;
-}
-
-#status-splash.use-filter--false {
-	image-rendering: pixelated;
-}
-
-#status-progress, #status-notice {
-	display: none;
-}
-
+/* A hairline rather than a chunky bar: the wait should feel like paper, not
+   like software. The percentage under it is the honest part — on a slow
+   connection this download is twenty megabytes, and a bar that sits still for
+   half a minute is indistinguishable from a crash. */
 #status-progress {
-	bottom: 10%;
-	width: 50%;
+	display: none;
+	width: 34%;
+	max-width: 220px;
+	height: 2px;
 	margin: 0 auto;
+	border: 0;
+	-webkit-appearance: none;
+	appearance: none;
+	background: #C6C5BE;
+}
+#status-progress::-webkit-progress-bar { background: #C6C5BE; }
+#status-progress::-webkit-progress-value { background: #47584E; }
+#status-progress::-moz-progress-bar { background: #47584E; }
+
+#status-note {
+	margin-top: 18px;
+	font-size: 12px;
+	letter-spacing: 0.16em;
+	color: #6B6E68;
+	min-height: 1em;
 }
 
 #status-notice {
-	background-color: #5b3943;
-	border-radius: 0.5rem;
-	border: 1px solid #9b3943;
-	color: #e0e0e0;
-	font-family: 'Noto Sans', 'Droid Sans', Arial, sans-serif;
-	line-height: 1.3;
+	display: none;
+	max-width: 34em;
 	margin: 0 2rem;
-	overflow: hidden;
 	padding: 1rem;
+	line-height: 1.5;
 	text-align: center;
-	z-index: 1;
+	font-size: 13px;
+	color: #6B6E68;
+}
+
+/* ---- the gate ---- */
+
+#gate {
+	position: absolute;
+	top: 0; bottom: 0; left: 0; right: 0;
+	background: #DEDCD6;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	z-index: 2;
+}
+
+#gate.away { display: none; }
+
+#gate-title {
+	font-size: 15px;
+	letter-spacing: 0.22em;
+	text-transform: uppercase;
+	color: #1C1D1B;
+	margin-bottom: 42px;
+}
+
+/* 16px or larger, or iOS Safari zooms the whole page when the field is
+   focused and never quite zooms back. */
+#gate-input {
+	width: 200px;
+	font-size: 16px;
+	font-family: inherit;
+	letter-spacing: 0.14em;
+	text-align: center;
+	color: #1C1D1B;
+	background: transparent;
+	border: 0;
+	border-bottom: 1px solid #A8A79F;
+	border-radius: 0;
+	padding: 6px 0;
+	outline: none;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+#gate-hint {
+	margin-top: 20px;
+	font-size: 12px;
+	letter-spacing: 0.14em;
+	color: #9B9E97;
+	min-height: 1em;
+}
+
+#gate.wrong #gate-input { animation: nudge 0.3s; }
+
+@keyframes nudge {
+	0%, 100% { transform: translateX(0); }
+	25% { transform: translateX(-5px); }
+	75% { transform: translateX(5px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	#gate.wrong #gate-input { animation: none; }
 }
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
 <link rel="manifest" href="index.manifest.json">
-<style>html,body{overscroll-behavior:none;height:100%;margin:0;overflow:hidden}canvas{touch-action:none !important;-webkit-user-select:none;user-select:none}body,#status{background-color:#DEDCD6}#status-splash{display:none}#status-progress{bottom:50%;width:34%;height:2px;border:0;-webkit-appearance:none;appearance:none;background:#C6C5BE}#status-progress::-webkit-progress-bar{background:#C6C5BE}#status-progress::-webkit-progress-value{background:#47584E}#status-progress::-moz-progress-bar{background:#47584E}#load-note{position:absolute;left:0;right:0;bottom:calc(50% - 30px);text-align:center;color:#6B6E68;font-size:12px;letter-spacing:.16em;font-family:-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif;z-index:2}</style><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Dear, Unknown"><script>window.addEventListener('DOMContentLoaded',function(){try{var n=document.createElement('div');n.id='load-note';document.body.appendChild(n);var b=document.getElementById('status-progress');var s=document.getElementById('status');setInterval(function(){try{if(!s||getComputedStyle(s).visibility!=='visible'){n.style.display='none';return}n.style.display='block';var v=(b&&b.max)?Math.round(b.value/b.max*100):0;n.textContent=v>0?v+'%':''}catch(e){}},200)}catch(e){}})</script>
+
 	</head>
 	<body>
 		<canvas id="canvas">
@@ -105,21 +167,48 @@ body {
 		</noscript>
 
 		<div id="status">
-			<img id="status-splash" class="show-image--true fullsize--true use-filter--true" src="index.png" alt="">
 			<progress id="status-progress"></progress>
+			<div id="status-note"></div>
 			<div id="status-notice"></div>
+		</div>
+
+		<div id="gate">
+			<div id="gate-title">Dear, Unknown</div>
+			<form id="gate-form" autocomplete="off">
+				<input id="gate-input" type="password" autocomplete="off" autocapitalize="none"
+						autocorrect="off" spellcheck="false" enterkeyhint="go" aria-label="Password">
+			</form>
+			<div id="gate-hint"></div>
 		</div>
 
 		<script src="index.js"></script>
 		<script>
-const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":10513384,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
+const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":8746012,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
 const GODOT_THREADS_ENABLED = false;
 const engine = new Engine(GODOT_CONFIG);
+
+/*
+	The gate is a doormat, not a lock. It stops someone who stumbles on the
+	link; it does not stop anyone who opens the developer console, because on
+	a static host there is nobody to check a password with. The one thing it
+	does buy beyond that: the twenty-megabyte download does not start until
+	somebody gets past it.
+
+	To change the password, run:
+	  python3 -c "import hashlib;print(hashlib.sha256(('dear-unknown|'+'NEWPASS').encode()).hexdigest())"
+	and paste the result over PASS_HASH.
+*/
+const PASS_HASH = 'af4dea198ccefd83d079152077fa0595c356ee8a8bc73c184cbc0591ff5ef752';
+const PASS_KEY = 'dear-unknown-open';
 
 (function () {
 	const statusOverlay = document.getElementById('status');
 	const statusProgress = document.getElementById('status-progress');
+	const statusNote = document.getElementById('status-note');
 	const statusNotice = document.getElementById('status-notice');
+	const gate = document.getElementById('gate');
+	const gateInput = document.getElementById('gate-input');
+	const gateHint = document.getElementById('gate-hint');
 
 	let initializing = true;
 	let statusMode = '';
@@ -143,8 +232,7 @@ const engine = new Engine(GODOT_CONFIG);
 		while (statusNotice.lastChild) {
 			statusNotice.removeChild(statusNotice.lastChild);
 		}
-		const lines = text.split('\n');
-		lines.forEach((line) => {
+		text.split('\n').forEach((line) => {
 			statusNotice.appendChild(document.createTextNode(line));
 			statusNotice.appendChild(document.createElement('br'));
 		});
@@ -157,62 +245,80 @@ const engine = new Engine(GODOT_CONFIG);
 		} else if (typeof err === 'string') {
 			setStatusNotice(err);
 		} else {
-			setStatusNotice('An unknown error occurred.');
+			setStatusNotice('Something went wrong loading the game.');
 		}
+		statusNote.textContent = '';
 		setStatusMode('notice');
 		initializing = false;
 	}
 
-	const missing = Engine.getMissingFeatures({
-		threads: GODOT_THREADS_ENABLED,
-	});
-
-	if (missing.length !== 0) {
-		if (GODOT_CONFIG['serviceWorker'] && GODOT_CONFIG['ensureCrossOriginIsolationHeaders'] && 'serviceWorker' in navigator) {
-			let serviceWorkerRegistrationPromise;
-			try {
-				serviceWorkerRegistrationPromise = navigator.serviceWorker.getRegistration();
-			} catch (err) {
-				serviceWorkerRegistrationPromise = Promise.reject(new Error('Service worker registration failed.'));
-			}
-			// There's a chance that installing the service worker would fix the issue
-			Promise.race([
-				serviceWorkerRegistrationPromise.then((registration) => {
-					if (registration != null) {
-						return Promise.reject(new Error('Service worker already exists.'));
-					}
-					return registration;
-				}).then(() => engine.installServiceWorker()),
-				// For some reason, `getRegistration()` can stall
-				new Promise((resolve) => {
-					setTimeout(() => resolve(), 2000);
-				}),
-			]).then(() => {
-				// Reload if there was no error.
-				window.location.reload();
-			}).catch((err) => {
-				console.error('Error while registering service worker:', err);
-			});
-		} else {
-			// Display the message as usual
-			const missingMsg = 'Error\nThe following features required to run Godot projects on the Web are missing:\n';
-			displayFailureNotice(missingMsg + missing.join('\n'));
+	function start() {
+		const missing = Engine.getMissingFeatures({ threads: GODOT_THREADS_ENABLED });
+		if (missing.length !== 0) {
+			displayFailureNotice('This browser is missing:\n' + missing.join('\n'));
+			return;
 		}
-	} else {
 		setStatusMode('progress');
 		engine.startGame({
 			'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
 					statusProgress.max = total;
+					statusNote.textContent = Math.round((current / total) * 100) + '%';
 				} else {
 					statusProgress.removeAttribute('value');
 					statusProgress.removeAttribute('max');
 				}
 			},
-		}).then(() => {
-			setStatusMode('hidden');
-		}, displayFailureNotice);
+		}).then(() => setStatusMode('hidden'), displayFailureNotice);
+	}
+
+	async function digest(value) {
+		const bytes = new TextEncoder().encode('dear-unknown|' + value);
+		const hash = await crypto.subtle.digest('SHA-256', bytes);
+		return Array.from(new Uint8Array(hash))
+			.map((b) => b.toString(16).padStart(2, '0')).join('');
+	}
+
+	function open() {
+		gate.classList.add('away');
+		start();
+	}
+
+	let remembered = null;
+	try {
+		remembered = window.localStorage.getItem(PASS_KEY);
+	} catch (err) {
+		remembered = null;
+	}
+
+	if (remembered === PASS_HASH) {
+		open();
+	} else {
+		gateInput.focus();
+		document.getElementById('gate-form').addEventListener('submit', async (event) => {
+			event.preventDefault();
+			gate.classList.remove('wrong');
+			let hash = '';
+			try {
+				hash = await digest(gateInput.value.trim().toLowerCase());
+			} catch (err) {
+				gateHint.textContent = 'This page needs to be opened over https.';
+				return;
+			}
+			if (hash !== PASS_HASH) {
+				// Reflow so the animation restarts on a second wrong try.
+				void gate.offsetWidth;
+				gate.classList.add('wrong');
+				gateHint.textContent = 'Try again';
+				gateInput.select();
+				return;
+			}
+			try {
+				window.localStorage.setItem(PASS_KEY, PASS_HASH);
+			} catch (err) { /* private browsing; they will type it again */ }
+			open();
+		});
 	}
 }());
 		</script>
