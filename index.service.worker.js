@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1787327443|1031849';
+const CACHE_VERSION = '1787327986|1022381';
 /** @type {string} */
 const CACHE_PREFIX = 'Dear, Unknown-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
@@ -111,8 +111,15 @@ self.addEventListener(
 		const isCacheable = FULL_CACHE.some((v) => v === local) || (base === referrer && base.endsWith(CACHED_FILES[0]));
 		if (isNavigate || isCacheable) {
 			event.respondWith((async () => {
-				// Try to use cache first
 				const cache = await caches.open(CACHE_NAME);
+				if (isNavigate) {
+					try {
+						return await fetchAndCache(event, cache, true);
+					} catch (e) {
+						const offline = await cache.match(event.request);
+						return offline != null ? offline : caches.match(OFFLINE_URL);
+					}
+				}
 				if (isNavigate) {
 					// Check if we have full cache during HTML page request.
 					/** @type {Response[]} */
