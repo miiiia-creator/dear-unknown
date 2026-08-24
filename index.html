@@ -105,6 +105,26 @@ body {
 
 #gate.away { display: none; }
 
+/*
+	Which build this is, before the game starts and before the password. Four
+	rounds went by on "it still looks like the old one" with no way for anyone
+	to tell, because nothing anywhere said. It stays visible while the game
+	runs: a phone that is showing yesterday's build should say so without
+	needing to be asked.
+*/
+#build-stamp {
+	position: fixed;
+	left: 0;
+	right: 0;
+	bottom: 5px;
+	text-align: center;
+	font: 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+	letter-spacing: 0.05em;
+	color: #B3B2AC;
+	pointer-events: none;
+	z-index: 5;
+}
+
 #gate-title {
 	font-size: 15px;
 	letter-spacing: 0.22em;
@@ -181,6 +201,8 @@ body {
 			<div id="gate-hint"></div>
 		</div>
 
+		<div id="build-stamp">24 Aug 16:54 8657631</div>
+
 		<script src="index.js"></script>
 		<script>
 const GODOT_CONFIG = {"args":[],"canvasResizePolicy":2,"emscriptenPoolSize":8,"ensureCrossOriginIsolationHeaders":false,"executable":"index","experimentalVK":true,"fileSizes":{"index.pck":6380148,"index.wasm":39513091},"focusCanvas":true,"gdextensionLibs":[],"godotPoolSize":4,"serviceWorker":"index.service.worker.js"};
@@ -225,6 +247,18 @@ if (location.search.indexOf('fresh') !== -1) {
 		.catch(() => null)
 		.then(() => location.replace(location.pathname));
 	throw new Error('clearing');
+}
+
+/*
+	Ask for a new worker on every load. Left to itself a browser will serve the
+	worker's own script from its cache for as long as it likes, and the worker
+	goes on serving the build it was installed with — which is how a phone kept
+	opening a game from hours earlier.
+*/
+if (navigator.serviceWorker) {
+	navigator.serviceWorker.getRegistration()
+		.then((reg) => (reg ? reg.update() : null))
+		.catch(() => null);
 }
 
 (function () {
